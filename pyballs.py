@@ -2,6 +2,7 @@ import pygame
 import time
 import random
 import math
+import numpy as np
 from typing import List
 
 black = (0,0,0)
@@ -15,7 +16,7 @@ HEIGHT = 1000
 
 CIRCLE_WIDTH = 2
 
-TICK_TIME = 2
+TICK_TIME = 1
 
 class Ball:
     x: int
@@ -43,7 +44,7 @@ class Pyballs:
     def move(self):
         pass
 
-    def draw(self):
+    def draw(self, skip=True):
         # void draw() {
         #   for (int i=0; i<numBlobs; ++i) {
         #     b[i].update();
@@ -69,30 +70,44 @@ class Pyballs:
         #   image(pg, 0, 0, width, height); 
         # }
 
-        actual_time = time.time()
-        if actual_time - self.time < TICK_TIME:
-            return
-        self.time = actual_time
-        print('painting')
+        if not skip:
+            actual_time = time.time()
+            if actual_time - self.time < TICK_TIME:
+                return
+            self.time = actual_time
 
         self.gameDisplay.fill(white)
-        for y in range(HEIGHT):
-            for x in range(WIDTH):
-                distance = euclidean_distance(x, y, WIDTH//2, HEIGHT//2)
-                # m = 1
-                # for ball in self.balls:
-                    # m += 2000 / (ball.x + ball.y + 1)
-                if distance < 100:
-                    pygame.Surface.set_at(self.gameDisplay, (x, y), green)
-                    # pygame.draw.rect(self.gameDisplay, green, (x, y, x+1, y+1))
+
+        x = np.arange(0, 300)
+        y = np.arange(0, 300)
+
+        x[100] = 200
+        x[200] = 200
+
+        # for y in range(HEIGHT):
+        #     for x in range(WIDTH):
+        #         m = 1
+        #         for ball in self.balls:
+        #             distance = euclidean_distance(x, y, WIDTH//2, HEIGHT//2)
+        #
+        #             m += 2000 / (ball.x + ball.y + 1)
+
+        X, Y = np.meshgrid(x, y)
+        Z = X + Y
+        Z = 255*Z/Z.max()
+        surf = pygame.surfarray.make_surface(Z)
+
+        self.gameDisplay.blit(surf, (0, 0))
+
+        return
 
 
-        pygame.draw.circle(self.gameDisplay, black, (ball.x, ball.y), ball.r, CIRCLE_WIDTH)
 
 
     
     def start(self):
         self.end = False
+        self.draw(True)
         while not self.end:
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
