@@ -16,7 +16,7 @@ HEIGHT = 1000
 
 CIRCLE_WIDTH = 2
 
-SPEED = 5
+SPEED = 15
 
 TICK_TIME = 1
 
@@ -103,14 +103,18 @@ class Pyballs:
         while not self.end:
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
-                    # if event.key == pygame.K_w:
-                    #     self.player_move('k')
-                    # if event.key == pygame.K_a:
-                    #     self.player_move('h')
-                    # if event.key == pygame.K_s:
-                    #     self.player_move('j')
-                    # if event.key == pygame.K_d:
-                    #     self.player_move('l')
+                    if event.key == pygame.K_a:
+                        self.balls[0].vx = 0
+                        self.balls[0].vy = -SPEED
+                    if event.key == pygame.K_w:
+                        self.balls[0].vy = 0
+                        self.balls[0].vx = -SPEED
+                    if event.key == pygame.K_d:
+                        self.balls[0].vx = 0
+                        self.balls[0].vy = SPEED
+                    if event.key == pygame.K_s:
+                        self.balls[0].vy = 0
+                        self.balls[0].vx = SPEED
                     if event.key == pygame.K_r:
                         self.__init__([])
                     if event.key == pygame.K_q:
