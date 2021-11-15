@@ -16,17 +16,41 @@ HEIGHT = 1000
 
 CIRCLE_WIDTH = 2
 
+SPEED = 5
+
 TICK_TIME = 1
 
 class Ball:
     x: int
     y: int
+    vx: int
+    vy: int
+    bx: List[int]
+    by: List[int]
     r: int
 
     def __init__(self) -> None:
         self.x = random.randint(0,WIDTH)
         self.y = random.randint(0,HEIGHT)
+        self.vx = random.randint(-SPEED,SPEED)
+        self.vy = random.randint(-SPEED,SPEED)
+        self.bx = [0] * WIDTH
+        self.by = [0] * HEIGHT
         self.r = 50
+
+    def update(self) -> None:
+        self.x += self.vx
+        self.y += self.vy
+
+        if self.x < 0 or self.x > WIDTH:
+            self.vx *= -1
+        if self.y < 0 or self.y > HEIGHT:
+            self.vy *= -1
+
+        for i in range(WIDTH):
+            self.bx[i] = int((self.x - i)**2)
+        for i in range(HEIGHT):
+            self.by[i] = int((self.y - i)**2)
 
 class Pyballs:
     balls: List[Ball]
@@ -45,30 +69,6 @@ class Pyballs:
         pass
 
     def draw(self, skip=True):
-        # void draw() {
-        #   for (int i=0; i<numBlobs; ++i) {
-        #     b[i].update();
-        #   }
-        #   
-        #   // Output into a buffered image for reuse
-        #   pg.beginDraw();
-        #   pg.loadPixels();
-        #   for (int y=0; y<h; y++) {
-        #     for (int x=0; x<w; x++) {
-        #       int m = 1;
-        #       for (int i=0; i <numBlobs; i++) {
-        #         // Increase this number to make your blobs bigger
-        #         m += 20000/(b[i].bx[x] + b[i].by[y] + 1);
-        #       }
-        #       pg.pixels[x+y*w] = color(0, m+x, (x+m+y)/2); //in HSB mode: color((m+x+y),255,255);
-        #     }
-        #   }
-        #   pg.updatePixels();
-        #   pg.endDraw();
-        #
-        #   // Display the results
-        #   image(pg, 0, 0, width, height); 
-        # }
 
         if not skip:
             actual_time = time.time()
@@ -78,32 +78,24 @@ class Pyballs:
 
         self.gameDisplay.fill(white)
 
-        x = np.arange(0, 300)
-        y = np.arange(0, 300)
+        arr = np.zeros((WIDTH, HEIGHT))
 
-        x[100] = 200
-        x[200] = 200
+        for ball in self.balls:
+            ball.update()
 
-        # for y in range(HEIGHT):
-        #     for x in range(WIDTH):
-        #         m = 1
-        #         for ball in self.balls:
-        #             distance = euclidean_distance(x, y, WIDTH//2, HEIGHT//2)
-        #
-        #             m += 2000 / (ball.x + ball.y + 1)
+        for y in range(HEIGHT):
+            for x in range(WIDTH):
+                m = 1
+                for ball in self.balls:
+                    m += 20000/(ball.bx[x] + ball.by[y] + 1)
+                arr[y,x] = m % 255
 
-        X, Y = np.meshgrid(x, y)
-        Z = X + Y
-        Z = 255*Z/Z.max()
-        surf = pygame.surfarray.make_surface(Z)
+        surf = pygame.surfarray.make_surface(arr)
 
         self.gameDisplay.blit(surf, (0, 0))
 
-        return
-
-
-
-
+        for ball in self.balls:
+            pygame.draw.circle(self.gameDisplay, red, (ball.y, ball.x), ball.r, CIRCLE_WIDTH)
     
     def start(self):
         self.end = False
