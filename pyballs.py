@@ -94,9 +94,13 @@ class Pyballs:
         for i in range(len(self.balls)):
             X, Y = np.meshgrid(np.array(bxby[i][0]), np.array(bxby[i][1]))
             # arr +=  20000/X + 20000/Y
-            arr += 20000/(X+Y)
+            arr *= 20000
+            arr /= (X+Y)
 
-        print(arr)
+        norm = np.linalg.norm(arr.clip(0,500))
+        arr /= norm
+
+        arr *= 20000
         arr %= 255
 
         # for y in range(HEIGHT):
