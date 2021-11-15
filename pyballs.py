@@ -18,7 +18,7 @@ CIRCLE_WIDTH = 2
 
 SPEED = 15
 
-TICK_TIME = 1
+TICK_TIME = .5
 
 class Ball:
     x: int
@@ -34,23 +34,8 @@ class Ball:
         self.y = random.randint(0,HEIGHT)
         self.vx = random.randint(-SPEED,SPEED)
         self.vy = random.randint(-SPEED,SPEED)
-        self.bx = [0] * WIDTH
-        self.by = [0] * HEIGHT
         self.r = 50
 
-    def update(self) -> None:
-        self.x += self.vx
-        self.y += self.vy
-
-        if self.x < 0 or self.x > WIDTH:
-            self.vx *= -1
-        if self.y < 0 or self.y > HEIGHT:
-            self.vy *= -1
-
-        for i in range(WIDTH):
-            self.bx[i] = int((self.x - i)**2)
-        for i in range(HEIGHT):
-            self.by[i] = int((self.y - i)**2)
 
 class Pyballs:
     balls: List[Ball]
@@ -68,7 +53,7 @@ class Pyballs:
     def move(self):
         pass
 
-    def draw(self, skip=True):
+    def draw(self, skip=True, debug=False):
 
         if not skip:
             actual_time = time.time()
@@ -76,23 +61,64 @@ class Pyballs:
                 return
             self.time = actual_time
 
-        self.gameDisplay.fill(white)
 
-        arr = np.zeros((WIDTH, HEIGHT))
+        if debug:
+            t = time.time()
 
+        bxby = [];
         for ball in self.balls:
-            ball.update()
+            ball.x += ball.vx
+            ball.y += ball.vy
 
-        for y in range(HEIGHT):
-            for x in range(WIDTH):
-                m = 1
-                for ball in self.balls:
-                    m += 20000/(ball.bx[x] + ball.by[y] + 1)
-                arr[y,x] = m % 255
+            if ball.x < 0 or ball.x > WIDTH:
+                ball.vx *= -1
+            if ball.y < 0 or ball.y > HEIGHT:
+                ball.vy *= -1
 
+            bx = [0] * WIDTH
+            for i in range(WIDTH):
+                bx[i] = int((ball.x - i)**2)
+            by = [0] * HEIGHT
+            for i in range(HEIGHT):
+                by[i] = int((ball.y - i)**2)
+            bxby.append((bx, by))
+
+        
+        if debug:
+            newt = time.time()
+            print("BXBY: " + str(newt - t))
+            t = newt
+
+        arr = np.ones((WIDTH, HEIGHT))
+
+        for i in range(len(self.balls)):
+            X, Y = np.meshgrid(np.array(bxby[i][0]), np.array(bxby[i][1]))
+            # arr +=  20000/X + 20000/Y
+            arr += 20000/(X+Y)
+
+        print(arr)
+        arr %= 255
+
+        # for y in range(HEIGHT):
+        #     for x in range(WIDTH):
+        #         m = 1
+        #         for i in range(len(self.balls)):
+        #             m += 20000/(bxby[i][0][x] + bxby[i][1][y] + 1)
+        #         arr[y,x] = m % 255
+
+        if debug:
+            newt = time.time()
+            print("M: " + str(newt - t))
+            t = newt
+
+        self.gameDisplay.fill(white)
         surf = pygame.surfarray.make_surface(arr)
-
         self.gameDisplay.blit(surf, (0, 0))
+
+        if debug:
+            newt = time.time()
+            print("PAINTING: " + str(newt - t))
+            t = newt
 
         for ball in self.balls:
             pygame.draw.circle(self.gameDisplay, red, (ball.y, ball.x), ball.r, CIRCLE_WIDTH)
@@ -126,8 +152,6 @@ class Pyballs:
             self.draw()
             pygame.display.update()
             self.clock.tick(60)
-def euclidean_distance(x1: int, y1: int, x2: int, y2: int) -> float:
-    return math.sqrt((x1-x2)**2 + (y1-y2)**2)
 
 if __name__ == '__main__':
     ball = Ball()
