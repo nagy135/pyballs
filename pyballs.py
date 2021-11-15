@@ -1,7 +1,6 @@
 import pygame
 import time
 import random
-import math
 import numpy as np
 from typing import List
 
@@ -11,22 +10,20 @@ red = (255,0,0)
 green = (0, 255, 0)
 blue = (0, 0, 255)
 
-WIDTH = 1000
-HEIGHT = 1000
+WIDTH = 400
+HEIGHT = 400
 
 CIRCLE_WIDTH = 2
 
-SPEED = 15
+SPEED = 5
 
-TICK_TIME = .5
+TICK_TIME = 1
 
 class Ball:
     x: int
     y: int
     vx: int
     vy: int
-    bx: List[int]
-    by: List[int]
     r: int
 
     def __init__(self) -> None:
@@ -53,17 +50,13 @@ class Pyballs:
     def move(self):
         pass
 
-    def draw(self, skip=True, debug=False):
+    def draw(self, skip=True):
 
         if not skip:
             actual_time = time.time()
             if actual_time - self.time < TICK_TIME:
                 return
             self.time = actual_time
-
-
-        if debug:
-            t = time.time()
 
         bxby = [];
         for ball in self.balls:
@@ -83,12 +76,6 @@ class Pyballs:
                 by[i] = int((ball.y - i)**2)
             bxby.append((bx, by))
 
-        
-        if debug:
-            newt = time.time()
-            print("BXBY: " + str(newt - t))
-            t = newt
-
         arr = np.ones((WIDTH, HEIGHT))
 
         for i in range(len(self.balls)):
@@ -103,26 +90,9 @@ class Pyballs:
         arr *= 20000
         arr %= 255
 
-        # for y in range(HEIGHT):
-        #     for x in range(WIDTH):
-        #         m = 1
-        #         for i in range(len(self.balls)):
-        #             m += 20000/(bxby[i][0][x] + bxby[i][1][y] + 1)
-        #         arr[y,x] = m % 255
-
-        if debug:
-            newt = time.time()
-            print("M: " + str(newt - t))
-            t = newt
-
         self.gameDisplay.fill(white)
         surf = pygame.surfarray.make_surface(arr)
         self.gameDisplay.blit(surf, (0, 0))
-
-        if debug:
-            newt = time.time()
-            print("PAINTING: " + str(newt - t))
-            t = newt
 
         for ball in self.balls:
             pygame.draw.circle(self.gameDisplay, red, (ball.y, ball.x), ball.r, CIRCLE_WIDTH)
@@ -160,8 +130,10 @@ class Pyballs:
 if __name__ == '__main__':
     ball = Ball()
     ball2 = Ball()
+    ball3 = Ball()
     a = Pyballs([
         ball,
-        ball2
+        ball2,
+        ball3
         ])
     a.start()
